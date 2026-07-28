@@ -245,15 +245,12 @@ MongoDB Atlas Database
 Add application screenshots here:
 
 ```
-/screenshots
+
+
 ```
 
-Example:
+<img width="1341" height="683" alt="image" src="https://github.com/user-attachments/assets/f31ca6fb-0604-4d75-b34e-96d01e760c05" />
 
-- Dashboard
-- Add Prompt Modal
-- Search & Filters
-- Import/Export
 
 ---
 

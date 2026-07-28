@@ -7,6 +7,7 @@ import {
   CopyPlus,
 } from "lucide-react";
 
+import { toast } from "sonner";
 import type { Prompt } from "../../types/Prompt";
 import { usePrompt } from "../../context/PromptContext";
 
@@ -21,6 +22,7 @@ export default function PromptCard({
     deletePrompt,
     toggleFavorite,
     togglePinned,
+    duplicatePrompt,
   } = usePrompt();
 
   const handleDelete = () => {
@@ -39,6 +41,20 @@ export default function PromptCard({
 
   const handlePinned = () => {
     togglePinned(prompt.id);
+  };
+
+  const handleDuplicate = () => {
+    duplicatePrompt(prompt.id);
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(prompt.content);
+
+      toast.success("Prompt copied to clipboard!");
+    } catch {
+      toast.error("Failed to copy prompt.");
+    }
   };
 
   return (
@@ -110,11 +126,13 @@ export default function PromptCard({
 
           <Copy
             size={18}
+            onClick={handleCopy}
             className="cursor-pointer text-gray-400 hover:text-green-600 transition"
           />
 
           <CopyPlus
             size={18}
+            onClick={handleDuplicate}
             className="cursor-pointer text-gray-400 hover:text-purple-600 transition"
           />
 

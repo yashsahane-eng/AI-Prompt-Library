@@ -28,6 +28,8 @@ interface PromptContextType {
 
   togglePinned: (id: string) => void;
 
+  duplicatePrompt: (id: string) => void;
+
   setPrompts: React.Dispatch<
     React.SetStateAction<Prompt[]>
   >;
@@ -101,6 +103,26 @@ export function PromptProvider({
     );
   };
 
+  const duplicatePrompt = (id: string) => {
+    const original = prompts.find(
+      (prompt) => prompt.id === id
+    );
+
+    if (!original) return;
+
+    const copy: Prompt = {
+      ...original,
+      id: crypto.randomUUID(),
+      title: `${original.title} (Copy)`,
+      favorite: false,
+      pinned: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setPrompts((prev) => [copy, ...prev]);
+  };
+
   return (
     <PromptContext.Provider
       value={{
@@ -109,6 +131,7 @@ export function PromptProvider({
         deletePrompt,
         toggleFavorite,
         togglePinned,
+        duplicatePrompt,
         setPrompts,
       }}
     >

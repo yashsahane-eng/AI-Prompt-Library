@@ -7,18 +7,20 @@ import {
 
 import type { Prompt } from "../types/Prompt";
 import { samplePrompts } from "../utils/samplePrompts";
+import { sortPrompts } from "./PromptActions";
 
 interface PromptContextType {
   prompts: Prompt[];
 
-  addPrompt: (
+  editingPrompt: Prompt | null;
+
+  addPrompt: (prompt: Omit<Prompt, "id">) => void;
+
+  updatePrompt: (
+    id: string,
     prompt: Omit<
       Prompt,
-      | "id"
-      | "favorite"
-      | "pinned"
-      | "createdAt"
-      | "updatedAt"
+      "id" | "createdAt" | "updatedAt"
     >
   ) => void;
 
@@ -30,108 +32,130 @@ interface PromptContextType {
 
   duplicatePrompt: (id: string) => void;
 
-  setPrompts: React.Dispatch<
-    React.SetStateAction<Prompt[]>
-  >;
+  setEditingPrompt: (prompt: Prompt | null) => void;
+
+  setPrompts: React.Dispatch<React.SetStateAction<Prompt[]>>;
 }
 
-const PromptContext = createContext<
-  PromptContextType | undefined
->(undefined);
-
-interface PromptProviderProps {
-  children: ReactNode;
-}
+const PromptContext = createContext<PromptContextType | undefined>(
+  undefined
+);
 
 export function PromptProvider({
   children,
-}: PromptProviderProps) {
-  const [prompts, setPrompts] =
-    useState<Prompt[]>(samplePrompts);
+}: {
+  children: ReactNode;
+}) {
+  const [prompts, setPrompts] = useState<Prompt[]>(
+    sortPrompts(samplePrompts)
+  );
 
-  const addPrompt = (
-    prompt: Omit<
-      Prompt,
-      | "id"
-      | "favorite"
-      | "pinned"
-      | "createdAt"
-      | "updatedAt"
-    >
-  ) => {
+  const [editingPrompt, setEditingPrompt] =
+    useState<Prompt | null>(null);
+
+  const addPrompt = (prompt: Omit<Prompt, "id">) => {
     const newPrompt: Prompt = {
-      ...prompt,
       id: crypto.randomUUID(),
-      favorite: false,
-      pinned: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      ...prompt,
     };
 
-    setPrompts((prev) => [newPrompt, ...prev]);
+    setPrompts((prev) => sortPrompts([newPrompt, ...prev]));
+  };
+
+  const updatePrompt = (
+    id: string,
+    updatedPrompt: Omit<
+      Prompt,
+      "id" | "createdAt" | "updatedAt"
+    >
+  ) => {
+    setPrompts((prev) =>
+      sortPrompts(
+        prev.map((prompt) =>
+          prompt.id === id
+            ? {
+                ...prompt,
+                ...updatedPrompt,
+                updatedAt: new Date().toISOString(),
+              }
+            : prompt
+        )
+      )
+    );
+
+    setEditingPrompt(null);
   };
 
   const deletePrompt = (id: string) => {
     setPrompts((prev) =>
-      prev.filter((prompt) => prompt.id !== id)
+      sortPrompts(prev.filter((prompt) => prompt.id !== id))
     );
   };
 
   const toggleFavorite = (id: string) => {
     setPrompts((prev) =>
-      prev.map((prompt) =>
-        prompt.id === id
-          ? {
-              ...prompt,
-              favorite: !prompt.favorite,
-            }
-          : prompt
+      sortPrompts(
+        prev.map((prompt) =>
+          prompt.id === id
+            ? {
+                ...prompt,
+                favorite: !prompt.favorite,
+                updatedAt: new Date().toISOString(),
+              }
+            : prompt
+        )
       )
     );
   };
 
   const togglePinned = (id: string) => {
     setPrompts((prev) =>
-      prev.map((prompt) =>
-        prompt.id === id
-          ? {
-              ...prompt,
-              pinned: !prompt.pinned,
-            }
-          : prompt
+      sortPrompts(
+        prev.map((prompt) =>
+          prompt.id === id
+            ? {
+                ...prompt,
+                pinned: !prompt.pinned,
+                updatedAt: new Date().toISOString(),
+              }
+            : prompt
+        )
       )
     );
   };
 
   const duplicatePrompt = (id: string) => {
-    const original = prompts.find(
-      (prompt) => prompt.id === id
-    );
+    setPrompts((prev) => {
+      const prompt = prev.find((p) => p.id === id);
 
-    if (!original) return;
+      if (!prompt) return prev;
 
-    const copy: Prompt = {
-      ...original,
-      id: crypto.randomUUID(),
-      title: `${original.title} (Copy)`,
-      favorite: false,
-      pinned: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+      const duplicated: Prompt = {
+        ...prompt,
+        id: crypto.randomUUID(),
+        title: `${prompt.title} (Copy)`,
+        favorite: false,
+        pinned: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-    setPrompts((prev) => [copy, ...prev]);
+      return sortPrompts([duplicated, ...prev]);
+    });
   };
 
   return (
     <PromptContext.Provider
       value={{
         prompts,
+        editingPrompt,
         addPrompt,
+        updatePrompt,
         deletePrompt,
         toggleFavorite,
         togglePinned,
         duplicatePrompt,
+        setEditingPrompt,
         setPrompts,
       }}
     >
@@ -145,7 +169,7 @@ export function usePrompt() {
 
   if (!context) {
     throw new Error(
-      "usePrompt must be used inside PromptProvider"
+      "usePrompt must be used within a PromptProvider"
     );
   }
 

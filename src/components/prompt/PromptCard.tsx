@@ -23,6 +23,7 @@ export default function PromptCard({
     toggleFavorite,
     togglePinned,
     duplicatePrompt,
+    setEditingPrompt,
   } = usePrompt();
 
   const handleDelete = () => {
@@ -50,11 +51,14 @@ export default function PromptCard({
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(prompt.content);
-
       toast.success("Prompt copied to clipboard!");
     } catch {
       toast.error("Failed to copy prompt.");
     }
+  };
+
+  const handleEdit = () => {
+    setEditingPrompt(prompt);
   };
 
   return (
@@ -109,8 +113,7 @@ export default function PromptCard({
       {/* Footer */}
       <div className="flex justify-between items-center mt-5">
         <span className="text-xs text-gray-500">
-          Updated{" "}
-          {new Date(prompt.updatedAt).toLocaleDateString()}
+          Updated {new Date(prompt.updatedAt).toLocaleDateString()}
         </span>
 
         <div className="flex items-center gap-3">
@@ -138,6 +141,7 @@ export default function PromptCard({
 
           <Pencil
             size={18}
+            onClick={handleEdit}
             className="cursor-pointer text-gray-400 hover:text-orange-600 transition"
           />
 

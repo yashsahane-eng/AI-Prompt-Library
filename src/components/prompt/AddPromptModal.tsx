@@ -1,6 +1,8 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 import { usePrompt } from "../../context/PromptContext";
 
@@ -35,7 +37,12 @@ function AddPromptModal({
   open,
   onClose,
 }: AddPromptModalProps) {
-  const { addPrompt } = usePrompt();
+  const {
+    addPrompt,
+    updatePrompt,
+    editingPrompt,
+    setEditingPrompt,
+  } = usePrompt();
 
   const {
     register,
@@ -44,7 +51,6 @@ function AddPromptModal({
     formState: { errors },
   } = useForm<PromptFormData>({
     resolver: zodResolver(promptSchema),
-
     defaultValues: {
       title: "",
       description: "",
@@ -53,8 +59,26 @@ function AddPromptModal({
     },
   });
 
+  useEffect(() => {
+    if (editingPrompt) {
+      reset({
+        title: editingPrompt.title,
+        description: editingPrompt.description,
+        category: editingPrompt.category,
+        tags: editingPrompt.tags.join(", "),
+      });
+    } else {
+      reset({
+        title: "",
+        description: "",
+        category: "Coding",
+        tags: "",
+      });
+    }
+  }, [editingPrompt, reset]);
+
   const onSubmit = (data: PromptFormData) => {
-    addPrompt({
+    const formattedPrompt = {
       title: data.title,
       description: data.description,
       content: data.description,
@@ -63,9 +87,31 @@ function AddPromptModal({
         .split(",")
         .map((tag) => tag.trim())
         .filter(Boolean),
-    });
+      favorite: editingPrompt?.favorite ?? false,
+      pinned: editingPrompt?.pinned ?? false,
+    };
 
+    if (editingPrompt) {
+      updatePrompt(editingPrompt.id, formattedPrompt);
+      toast.success("Prompt updated successfully!");
+    } else {
+      addPrompt({
+        ...formattedPrompt,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      toast.success("Prompt added successfully!");
+    }
+
+    handleClose();
+  };
+
+  const handleClose = () => {
     reset();
+
+    setEditingPrompt(null);
+
     onClose();
   };
 
@@ -76,11 +122,13 @@ function AddPromptModal({
       <div className="bg-white rounded-xl w-full max-w-2xl p-6 shadow-xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">
-            Add Prompt
+            {editingPrompt
+              ? "Edit Prompt"
+              : "Add Prompt"}
           </h2>
 
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-2xl hover:text-red-500"
           >
             ×
@@ -181,7 +229,7 @@ function AddPromptModal({
           <div className="flex justify-end gap-3 pt-3">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-5 py-2 border rounded-lg hover:bg-gray-100"
             >
               Cancel
@@ -191,7 +239,9 @@ function AddPromptModal({
               type="submit"
               className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              Save Prompt
+              {editingPrompt
+                ? "Update Prompt"
+                : "Save Prompt"}
             </button>
           </div>
         </form>

@@ -1,8 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddPromptModal from "../prompt/AddPromptModal";
+import { usePrompt } from "../../context/PromptContext";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
+
+  const { editingPrompt, setEditingPrompt } = usePrompt();
+
+  useEffect(() => {
+    if (editingPrompt) {
+      setOpen(true);
+    }
+  }, [editingPrompt]);
+
+  const handleClose = () => {
+    setOpen(false);
+    setEditingPrompt(null);
+  };
 
   return (
     <>
@@ -21,7 +35,7 @@ function Navbar() {
 
       <AddPromptModal
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={handleClose}
       />
     </>
   );

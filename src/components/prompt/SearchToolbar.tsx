@@ -8,14 +8,15 @@ function SearchToolbar() {
     setSearchTerm,
     selectedCategory,
     setSelectedCategory,
+    showFavoritesOnly,
+    setShowFavoritesOnly,
     sortBy,
     setSortBy,
   } = usePrompt();
 
   return (
-    <div className="mt-8 bg-white rounded-xl border p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
-      {/* Search */}
-      <div className="relative w-full md:w-96">
+    <div className="mt-8 bg-white rounded-xl border p-4 flex flex-col lg:flex-row gap-4 items-center justify-between">
+      <div className="relative w-full lg:w-96">
         <Search
           size={18}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -30,8 +31,7 @@ function SearchToolbar() {
         />
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-3 flex-wrap">
+      <div className="flex flex-wrap gap-3 w-full lg:w-auto">
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -48,6 +48,17 @@ function SearchToolbar() {
           <option value="Social Media">Social Media</option>
           <option value="Productivity">Productivity</option>
           <option value="Others">Others</option>
+        </select>
+
+        <select
+          value={showFavoritesOnly ? "favorites" : "all"}
+          onChange={(e) =>
+            setShowFavoritesOnly(e.target.value === "favorites")
+          }
+          className="border rounded-lg px-4 py-2"
+        >
+          <option value="all">All Prompts</option>
+          <option value="favorites">Favorites Only</option>
         </select>
 
         <select

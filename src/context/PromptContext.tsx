@@ -17,8 +17,6 @@ import {
   type SortOption,
 } from "./PromptActions";
 
-
-
 interface PromptContextType {
   prompts: Prompt[];
   filteredPrompts: Prompt[];
@@ -29,6 +27,9 @@ interface PromptContextType {
   selectedCategory: string;
   setSelectedCategory: (value: string) => void;
 
+  showFavoritesOnly: boolean;
+  setShowFavoritesOnly: (value: boolean) => void;
+
   sortBy: SortOption;
   setSortBy: (value: SortOption) => void;
 
@@ -38,10 +39,7 @@ interface PromptContextType {
 
   updatePrompt: (
     id: string,
-    prompt: Omit<
-      Prompt,
-      "id" | "createdAt" | "updatedAt"
-    >
+    prompt: Omit<Prompt, "id" | "createdAt" | "updatedAt">
   ) => void;
 
   deletePrompt: (id: string) => void;
@@ -90,6 +88,9 @@ export function PromptProvider({
   const [selectedCategory, setSelectedCategory] =
     useState("All");
 
+  const [showFavoritesOnly, setShowFavoritesOnly] =
+    useState(false);
+
   const [sortBy, setSortBy] =
     useState<SortOption>("Newest");
 
@@ -105,6 +106,10 @@ export function PromptProvider({
 
     result = filterPrompts(result, selectedCategory);
 
+    if (showFavoritesOnly) {
+      result = result.filter((prompt) => prompt.favorite);
+    }
+
     result = sortFilteredPrompts(result, sortBy);
 
     return result;
@@ -112,6 +117,7 @@ export function PromptProvider({
     prompts,
     searchTerm,
     selectedCategory,
+    showFavoritesOnly,
     sortBy,
   ]);
 
@@ -221,6 +227,9 @@ export function PromptProvider({
 
         selectedCategory,
         setSelectedCategory,
+
+        showFavoritesOnly,
+        setShowFavoritesOnly,
 
         sortBy,
         setSortBy,

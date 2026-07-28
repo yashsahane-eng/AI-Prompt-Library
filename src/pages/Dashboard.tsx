@@ -2,8 +2,14 @@ import MainLayout from "../components/layout/MainLayout";
 import DashboardCards from "../components/dashboard/DashboardCards";
 import SearchToolbar from "../components/prompt/SearchToolbar";
 import PromptGrid from "../components/prompt/PromptGrid";
+import { usePrompt } from "../context/PromptContext";
 
 function Dashboard() {
+  const { prompts } = usePrompt();
+
+  // Temporary check
+  console.log(prompts);
+
   return (
     <MainLayout>
       <h2 className="text-3xl font-bold">
@@ -17,7 +23,6 @@ function Dashboard() {
       <DashboardCards />
       <SearchToolbar />
       <PromptGrid />
-      
     </MainLayout>
   );
 }

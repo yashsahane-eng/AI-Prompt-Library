@@ -34,3 +34,16 @@ export function searchPrompts(
     );
   });
 }
+
+export function filterPrompts(
+  prompts: Prompt[],
+  category: string
+) {
+  if (category === "All") {
+    return prompts;
+  }
+
+  return prompts.filter(
+    (prompt) => prompt.category === category
+  );
+}

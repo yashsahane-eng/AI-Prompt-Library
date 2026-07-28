@@ -12,6 +12,7 @@ import { samplePrompts } from "../utils/samplePrompts";
 import {
   sortPrompts,
   searchPrompts,
+  filterPrompts,
 } from "./PromptActions";
 
 interface PromptContextType {
@@ -20,6 +21,9 @@ interface PromptContextType {
 
   searchTerm: string;
   setSearchTerm: (value: string) => void;
+
+  selectedCategory: string;
+  setSelectedCategory: (value: string) => void;
 
   editingPrompt: Prompt | null;
 
@@ -76,6 +80,9 @@ export function PromptProvider({
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [selectedCategory, setSelectedCategory] =
+    useState("All");
+
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
@@ -84,8 +91,10 @@ export function PromptProvider({
   }, [prompts]);
 
   const filteredPrompts = useMemo(() => {
-    return searchPrompts(prompts, searchTerm);
-  }, [prompts, searchTerm]);
+    let result = searchPrompts(prompts, searchTerm);
+    result = filterPrompts(result, selectedCategory);
+    return result;
+  }, [prompts, searchTerm, selectedCategory]);
 
   const addPrompt = (prompt: Omit<Prompt, "id">) => {
     const newPrompt: Prompt = {
@@ -187,15 +196,22 @@ export function PromptProvider({
       value={{
         prompts,
         filteredPrompts,
+
         searchTerm,
         setSearchTerm,
+
+        selectedCategory,
+        setSelectedCategory,
+
         editingPrompt,
+
         addPrompt,
         updatePrompt,
         deletePrompt,
         toggleFavorite,
         togglePinned,
         duplicatePrompt,
+
         setEditingPrompt,
         setPrompts,
       }}

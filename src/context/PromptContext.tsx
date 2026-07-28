@@ -13,6 +13,8 @@ import {
   sortPrompts,
   searchPrompts,
   filterPrompts,
+  sortFilteredPrompts,
+  type SortOption,
 } from "./PromptActions";
 
 interface PromptContextType {
@@ -24,6 +26,9 @@ interface PromptContextType {
 
   selectedCategory: string;
   setSelectedCategory: (value: string) => void;
+
+  sortBy: SortOption;
+  setSortBy: (value: SortOption) => void;
 
   editingPrompt: Prompt | null;
 
@@ -83,6 +88,9 @@ export function PromptProvider({
   const [selectedCategory, setSelectedCategory] =
     useState("All");
 
+  const [sortBy, setSortBy] =
+    useState<SortOption>("Newest");
+
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
@@ -92,9 +100,18 @@ export function PromptProvider({
 
   const filteredPrompts = useMemo(() => {
     let result = searchPrompts(prompts, searchTerm);
+
     result = filterPrompts(result, selectedCategory);
+
+    result = sortFilteredPrompts(result, sortBy);
+
     return result;
-  }, [prompts, searchTerm, selectedCategory]);
+  }, [
+    prompts,
+    searchTerm,
+    selectedCategory,
+    sortBy,
+  ]);
 
   const addPrompt = (prompt: Omit<Prompt, "id">) => {
     const newPrompt: Prompt = {
@@ -202,6 +219,9 @@ export function PromptProvider({
 
         selectedCategory,
         setSelectedCategory,
+
+        sortBy,
+        setSortBy,
 
         editingPrompt,
 

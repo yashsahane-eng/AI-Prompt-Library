@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import { usePrompt } from "../../context/PromptContext";
+import type { SortOption } from "../../context/PromptActions";
 
 function SearchToolbar() {
   const {
@@ -7,12 +8,13 @@ function SearchToolbar() {
     setSearchTerm,
     selectedCategory,
     setSelectedCategory,
+    sortBy,
+    setSortBy,
   } = usePrompt();
 
   return (
     <div className="mt-8 bg-white rounded-xl border p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
       {/* Search */}
-
       <div className="relative w-full md:w-96">
         <Search
           size={18}
@@ -29,7 +31,6 @@ function SearchToolbar() {
       </div>
 
       {/* Filters */}
-
       <div className="flex gap-3 flex-wrap">
         <select
           value={selectedCategory}
@@ -39,29 +40,27 @@ function SearchToolbar() {
           <option value="All">All Categories</option>
           <option value="Coding">Coding</option>
           <option value="Marketing">Marketing</option>
-          <option value="Content Writing">
-            Content Writing
-          </option>
+          <option value="Content Writing">Content Writing</option>
           <option value="Email">Email</option>
           <option value="Resume">Resume</option>
           <option value="SQL">SQL</option>
           <option value="Design">Design</option>
-          <option value="Social Media">
-            Social Media
-          </option>
-          <option value="Productivity">
-            Productivity
-          </option>
+          <option value="Social Media">Social Media</option>
+          <option value="Productivity">Productivity</option>
           <option value="Others">Others</option>
         </select>
 
-        {/* Sort - next feature */}
-
         <select
-          disabled
-          className="border rounded-lg px-4 py-2 bg-gray-100 cursor-not-allowed"
+          value={sortBy}
+          onChange={(e) =>
+            setSortBy(e.target.value as SortOption)
+          }
+          className="border rounded-lg px-4 py-2"
         >
-          <option>A → Z</option>
+          <option value="Newest">Newest</option>
+          <option value="Oldest">Oldest</option>
+          <option value="A-Z">A → Z</option>
+          <option value="Z-A">Z → A</option>
         </select>
       </div>
     </div>

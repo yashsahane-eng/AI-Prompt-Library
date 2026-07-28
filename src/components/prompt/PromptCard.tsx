@@ -17,7 +17,11 @@ interface PromptCardProps {
 export default function PromptCard({
   prompt,
 }: PromptCardProps) {
-  const { deletePrompt } = usePrompt();
+  const {
+    deletePrompt,
+    toggleFavorite,
+    togglePinned,
+  } = usePrompt();
 
   const handleDelete = () => {
     const confirmDelete = window.confirm(
@@ -29,8 +33,22 @@ export default function PromptCard({
     deletePrompt(prompt.id);
   };
 
+  const handleFavorite = () => {
+    toggleFavorite(prompt.id);
+  };
+
+  const handlePinned = () => {
+    togglePinned(prompt.id);
+  };
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition duration-200">
+    <div
+      className={`border rounded-xl p-5 shadow-sm hover:shadow-md transition duration-200 ${
+        prompt.pinned
+          ? "border-blue-500 bg-blue-50"
+          : "bg-white border-gray-200"
+      }`}
+    >
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -43,9 +61,9 @@ export default function PromptCard({
           </p>
         </div>
 
-        <button>
+        <button onClick={handleFavorite}>
           <Star
-            size={18}
+            size={20}
             className={`transition ${
               prompt.favorite
                 ? "fill-yellow-400 text-yellow-400"
@@ -82,6 +100,7 @@ export default function PromptCard({
         <div className="flex items-center gap-3">
           <Pin
             size={18}
+            onClick={handlePinned}
             className={`cursor-pointer transition ${
               prompt.pinned
                 ? "text-blue-600"

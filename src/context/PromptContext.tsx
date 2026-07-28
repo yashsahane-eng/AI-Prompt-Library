@@ -24,6 +24,10 @@ interface PromptContextType {
 
   deletePrompt: (id: string) => void;
 
+  toggleFavorite: (id: string) => void;
+
+  togglePinned: (id: string) => void;
+
   setPrompts: React.Dispatch<
     React.SetStateAction<Prompt[]>
   >;
@@ -71,12 +75,40 @@ export function PromptProvider({
     );
   };
 
+  const toggleFavorite = (id: string) => {
+    setPrompts((prev) =>
+      prev.map((prompt) =>
+        prompt.id === id
+          ? {
+              ...prompt,
+              favorite: !prompt.favorite,
+            }
+          : prompt
+      )
+    );
+  };
+
+  const togglePinned = (id: string) => {
+    setPrompts((prev) =>
+      prev.map((prompt) =>
+        prompt.id === id
+          ? {
+              ...prompt,
+              pinned: !prompt.pinned,
+            }
+          : prompt
+      )
+    );
+  };
+
   return (
     <PromptContext.Provider
       value={{
         prompts,
         addPrompt,
         deletePrompt,
+        toggleFavorite,
+        togglePinned,
         setPrompts,
       }}
     >

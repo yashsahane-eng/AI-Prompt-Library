@@ -21,6 +21,8 @@ interface PromptContextType {
   prompts: Prompt[];
   filteredPrompts: Prompt[];
 
+  loading: boolean;
+
   searchTerm: string;
   setSearchTerm: (value: string) => void;
 
@@ -77,6 +79,9 @@ export function PromptProvider({
     Prompt[]
   >([]);
 
+  const [loading, setLoading] =
+    useState(true);
+
   const [editingPrompt, setEditingPrompt] =
     useState<Prompt | null>(null);
 
@@ -99,6 +104,8 @@ export function PromptProvider({
   useEffect(() => {
     const loadPrompts = async () => {
       try {
+        setLoading(true);
+
         const data =
           await promptService.getAll();
 
@@ -108,6 +115,8 @@ export function PromptProvider({
           "Failed to load prompts",
           error
         );
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -155,6 +164,7 @@ export function PromptProvider({
       );
     } catch (error) {
       console.error(error);
+      throw error;
     }
   };
 
@@ -185,19 +195,24 @@ export function PromptProvider({
       setEditingPrompt(null);
     } catch (error) {
       console.error(error);
+      throw error;
     }
   };
-    const deletePrompt = async (id: string) => {
+
+  const deletePrompt = async (id: string) => {
     try {
       await promptService.delete(id);
 
       setPrompts((prev) =>
         sortPrompts(
-          prev.filter((prompt) => prompt.id !== id)
+          prev.filter(
+            (prompt) => prompt.id !== id
+          )
         )
       );
     } catch (error) {
       console.error(error);
+      throw error;
     }
   };
 
@@ -208,28 +223,24 @@ export function PromptProvider({
 
     if (!prompt) return;
 
-    try {
-      const updated =
-        await promptService.update(id, {
-          title: prompt.title,
-          description: prompt.description,
-          content: prompt.content,
-          category: prompt.category,
-          tags: prompt.tags,
-          favorite: !prompt.favorite,
-          pinned: prompt.pinned,
-        });
+    const updated =
+      await promptService.update(id, {
+        title: prompt.title,
+        description: prompt.description,
+        content: prompt.content,
+        category: prompt.category,
+        tags: prompt.tags,
+        favorite: !prompt.favorite,
+        pinned: prompt.pinned,
+      });
 
-      setPrompts((prev) =>
-        sortPrompts(
-          prev.map((item) =>
-            item.id === id ? updated : item
-          )
+    setPrompts((prev) =>
+      sortPrompts(
+        prev.map((item) =>
+          item.id === id ? updated : item
         )
-      );
-    } catch (error) {
-      console.error(error);
-    }
+      )
+    );
   };
 
   const togglePinned = async (id: string) => {
@@ -239,28 +250,24 @@ export function PromptProvider({
 
     if (!prompt) return;
 
-    try {
-      const updated =
-        await promptService.update(id, {
-          title: prompt.title,
-          description: prompt.description,
-          content: prompt.content,
-          category: prompt.category,
-          tags: prompt.tags,
-          favorite: prompt.favorite,
-          pinned: !prompt.pinned,
-        });
+    const updated =
+      await promptService.update(id, {
+        title: prompt.title,
+        description: prompt.description,
+        content: prompt.content,
+        category: prompt.category,
+        tags: prompt.tags,
+        favorite: prompt.favorite,
+        pinned: !prompt.pinned,
+      });
 
-      setPrompts((prev) =>
-        sortPrompts(
-          prev.map((item) =>
-            item.id === id ? updated : item
-          )
+    setPrompts((prev) =>
+      sortPrompts(
+        prev.map((item) =>
+          item.id === id ? updated : item
         )
-      );
-    } catch (error) {
-      console.error(error);
-    }
+      )
+    );
   };
 
   const duplicatePrompt = async (id: string) => {
@@ -270,26 +277,22 @@ export function PromptProvider({
 
     if (!prompt) return;
 
-    try {
-      const duplicated =
-        await promptService.create({
-          title: `${prompt.title} (Copy)`,
-          description: prompt.description,
-          content: prompt.content,
-          category: prompt.category,
-          tags: [...prompt.tags],
-          favorite: false,
-          pinned: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
+    const duplicated =
+      await promptService.create({
+        title: `${prompt.title} (Copy)`,
+        description: prompt.description,
+        content: prompt.content,
+        category: prompt.category,
+        tags: [...prompt.tags],
+        favorite: false,
+        pinned: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
 
-      setPrompts((prev) =>
-        sortPrompts([duplicated, ...prev])
-      );
-    } catch (error) {
-      console.error(error);
-    }
+    setPrompts((prev) =>
+      sortPrompts([duplicated, ...prev])
+    );
   };
 
   return (
@@ -297,6 +300,8 @@ export function PromptProvider({
       value={{
         prompts,
         filteredPrompts,
+
+        loading,
 
         searchTerm,
         setSearchTerm,

@@ -12,6 +12,9 @@ import { samplePrompts } from "../utils/samplePrompts";
 import {
   sortPrompts,
   searchPrompts,
+  filterPrompts,
+  sortFilteredPrompts,
+  type SortOption,
 } from "./PromptActions";
 
 interface PromptContextType {
@@ -21,16 +24,22 @@ interface PromptContextType {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
 
+  selectedCategory: string;
+  setSelectedCategory: (value: string) => void;
+
+  showFavoritesOnly: boolean;
+  setShowFavoritesOnly: (value: boolean) => void;
+
+  sortBy: SortOption;
+  setSortBy: (value: SortOption) => void;
+
   editingPrompt: Prompt | null;
 
   addPrompt: (prompt: Omit<Prompt, "id">) => void;
 
   updatePrompt: (
     id: string,
-    prompt: Omit<
-      Prompt,
-      "id" | "createdAt" | "updatedAt"
-    >
+    prompt: Omit<Prompt, "id" | "createdAt" | "updatedAt">
   ) => void;
 
   deletePrompt: (id: string) => void;
@@ -76,6 +85,15 @@ export function PromptProvider({
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [selectedCategory, setSelectedCategory] =
+    useState("All");
+
+  const [showFavoritesOnly, setShowFavoritesOnly] =
+    useState(false);
+
+  const [sortBy, setSortBy] =
+    useState<SortOption>("Newest");
+
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
@@ -84,8 +102,24 @@ export function PromptProvider({
   }, [prompts]);
 
   const filteredPrompts = useMemo(() => {
-    return searchPrompts(prompts, searchTerm);
-  }, [prompts, searchTerm]);
+    let result = searchPrompts(prompts, searchTerm);
+
+    result = filterPrompts(result, selectedCategory);
+
+    if (showFavoritesOnly) {
+      result = result.filter((prompt) => prompt.favorite);
+    }
+
+    result = sortFilteredPrompts(result, sortBy);
+
+    return result;
+  }, [
+    prompts,
+    searchTerm,
+    selectedCategory,
+    showFavoritesOnly,
+    sortBy,
+  ]);
 
   const addPrompt = (prompt: Omit<Prompt, "id">) => {
     const newPrompt: Prompt = {
@@ -187,15 +221,28 @@ export function PromptProvider({
       value={{
         prompts,
         filteredPrompts,
+
         searchTerm,
         setSearchTerm,
+
+        selectedCategory,
+        setSelectedCategory,
+
+        showFavoritesOnly,
+        setShowFavoritesOnly,
+
+        sortBy,
+        setSortBy,
+
         editingPrompt,
+
         addPrompt,
         updatePrompt,
         deletePrompt,
         toggleFavorite,
         togglePinned,
         duplicatePrompt,
+
         setEditingPrompt,
         setPrompts,
       }}

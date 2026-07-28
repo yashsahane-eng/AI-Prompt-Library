@@ -1,6 +1,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -49,19 +50,38 @@ const PromptContext = createContext<PromptContextType | undefined>(
   undefined
 );
 
+const STORAGE_KEY = "ai-prompt-library";
+
 export function PromptProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  const [prompts, setPrompts] = useState<Prompt[]>(
-    sortPrompts(samplePrompts)
-  );
+  const [prompts, setPrompts] = useState<Prompt[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (saved) {
+      try {
+        return sortPrompts(JSON.parse(saved));
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+
+    return sortPrompts(samplePrompts);
+  });
 
   const [editingPrompt, setEditingPrompt] =
     useState<Prompt | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(prompts)
+    );
+  }, [prompts]);
 
   const filteredPrompts = useMemo(() => {
     return searchPrompts(prompts, searchTerm);
@@ -102,7 +122,9 @@ export function PromptProvider({
 
   const deletePrompt = (id: string) => {
     setPrompts((prev) =>
-      sortPrompts(prev.filter((prompt) => prompt.id !== id))
+      sortPrompts(
+        prev.filter((prompt) => prompt.id !== id)
+      )
     );
   };
 
@@ -140,7 +162,9 @@ export function PromptProvider({
 
   const duplicatePrompt = (id: string) => {
     setPrompts((prev) => {
-      const prompt = prev.find((p) => p.id === id);
+      const prompt = prev.find(
+        (prompt) => prompt.id === id
+      );
 
       if (!prompt) return prev;
 
@@ -186,7 +210,7 @@ export function usePrompt() {
 
   if (!context) {
     throw new Error(
-      "usePrompt must be used within a PromptProvider"
+      "usePrompt must be used within PromptProvider"
     );
   }
 

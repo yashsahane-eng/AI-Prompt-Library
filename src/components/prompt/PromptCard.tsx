@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import type { Prompt } from "../../types/Prompt";
+import { usePrompt } from "../../context/PromptContext";
 
 interface PromptCardProps {
   prompt: Prompt;
@@ -16,6 +17,18 @@ interface PromptCardProps {
 export default function PromptCard({
   prompt,
 }: PromptCardProps) {
+  const { deletePrompt } = usePrompt();
+
+  const handleDelete = () => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete "${prompt.title}"?`
+    );
+
+    if (!confirmDelete) return;
+
+    deletePrompt(prompt.id);
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition duration-200">
       {/* Header */}
@@ -93,6 +106,7 @@ export default function PromptCard({
 
           <Trash2
             size={18}
+            onClick={handleDelete}
             className="cursor-pointer text-gray-400 hover:text-red-600 transition"
           />
         </div>

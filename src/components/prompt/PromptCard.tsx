@@ -26,26 +26,44 @@ export default function PromptCard({
     setEditingPrompt,
   } = usePrompt();
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     const confirmDelete = window.confirm(
       `Are you sure you want to delete "${prompt.title}"?`
     );
 
     if (!confirmDelete) return;
 
-    deletePrompt(prompt.id);
+    try {
+      await deletePrompt(prompt.id);
+      toast.success("Prompt deleted successfully!");
+    } catch {
+      toast.error("Failed to delete prompt.");
+    }
   };
 
-  const handleFavorite = () => {
-    toggleFavorite(prompt.id);
+  const handleFavorite = async () => {
+    try {
+      await toggleFavorite(prompt.id);
+    } catch {
+      toast.error("Failed to update favorite.");
+    }
   };
 
-  const handlePinned = () => {
-    togglePinned(prompt.id);
+  const handlePinned = async () => {
+    try {
+      await togglePinned(prompt.id);
+    } catch {
+      toast.error("Failed to update pin.");
+    }
   };
 
-  const handleDuplicate = () => {
-    duplicatePrompt(prompt.id);
+  const handleDuplicate = async () => {
+    try {
+      await duplicatePrompt(prompt.id);
+      toast.success("Prompt duplicated!");
+    } catch {
+      toast.error("Failed to duplicate prompt.");
+    }
   };
 
   const handleCopy = async () => {
@@ -69,7 +87,6 @@ export default function PromptCard({
           : "bg-white border-gray-200"
       }`}
     >
-      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">
@@ -93,12 +110,10 @@ export default function PromptCard({
         </button>
       </div>
 
-      {/* Description */}
       <p className="text-gray-600 text-sm mt-4">
         {prompt.description}
       </p>
 
-      {/* Tags */}
       <div className="flex flex-wrap gap-2 mt-4">
         {prompt.tags.map((tag) => (
           <span
@@ -110,7 +125,6 @@ export default function PromptCard({
         ))}
       </div>
 
-      {/* Footer */}
       <div className="flex justify-between items-center mt-5">
         <span className="text-xs text-gray-500">
           Updated {new Date(prompt.updatedAt).toLocaleDateString()}

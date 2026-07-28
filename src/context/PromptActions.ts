@@ -12,3 +12,25 @@ export function sortPrompts(prompts: Prompt[]) {
     );
   });
 }
+
+export function searchPrompts(
+  prompts: Prompt[],
+  searchTerm: string
+) {
+  if (!searchTerm.trim()) {
+    return prompts;
+  }
+
+  const term = searchTerm.toLowerCase();
+
+  return prompts.filter((prompt) => {
+    return (
+      prompt.title.toLowerCase().includes(term) ||
+      prompt.description.toLowerCase().includes(term) ||
+      prompt.category.toLowerCase().includes(term) ||
+      prompt.tags.some((tag) =>
+        tag.toLowerCase().includes(term)
+      )
+    );
+  });
+}

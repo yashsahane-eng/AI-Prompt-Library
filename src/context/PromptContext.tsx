@@ -1,16 +1,24 @@
 import {
   createContext,
   useContext,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
 
 import type { Prompt } from "../types/Prompt";
 import { samplePrompts } from "../utils/samplePrompts";
-import { sortPrompts } from "./PromptActions";
+import {
+  sortPrompts,
+  searchPrompts,
+} from "./PromptActions";
 
 interface PromptContextType {
   prompts: Prompt[];
+  filteredPrompts: Prompt[];
+
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
 
   editingPrompt: Prompt | null;
 
@@ -52,6 +60,12 @@ export function PromptProvider({
 
   const [editingPrompt, setEditingPrompt] =
     useState<Prompt | null>(null);
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredPrompts = useMemo(() => {
+    return searchPrompts(prompts, searchTerm);
+  }, [prompts, searchTerm]);
 
   const addPrompt = (prompt: Omit<Prompt, "id">) => {
     const newPrompt: Prompt = {
@@ -148,6 +162,9 @@ export function PromptProvider({
     <PromptContext.Provider
       value={{
         prompts,
+        filteredPrompts,
+        searchTerm,
+        setSearchTerm,
         editingPrompt,
         addPrompt,
         updatePrompt,

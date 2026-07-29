@@ -1,75 +1,272 @@
-# React + TypeScript + Vite
+# 🤖 AI Prompt Library
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack AI Prompt Management application built with **React, TypeScript, Express, and MongoDB**.
 
-Currently, two official plugins are available:
+AI Prompt Library allows users to create, manage, organize, and reuse AI prompts with features like search, filtering, favorites, pinning, duplication, import/export, and a clean dashboard experience.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🚀 Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prompt Management
+- ✅ Create new prompts
+- ✅ View all prompts
+- ✅ Edit existing prompts
+- ✅ Delete prompts with confirmation dialog
+- ✅ Duplicate prompts
+- ✅ Copy prompts to clipboard
+- ✅ Pin important prompts
+- ✅ Mark prompts as favorites
 
-## Expanding the ESLint configuration
+### Organization
+- ✅ Search prompts
+- ✅ Filter by category
+- ✅ Sort prompts
+- ✅ Favorite-only view
+- ✅ Recent prompt management
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### UI/UX
+- ✅ Responsive dashboard design
+- ✅ Sidebar navigation
+- ✅ Navbar layout
+- ✅ Dashboard cards
+- ✅ Toast notifications
+- ✅ Loading states
+- ✅ Form validation
+- ✅ Keyboard shortcut (`Ctrl + K` for search)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Import / Export
+- ✅ Export prompts as JSON
+- ✅ Import prompts from JSON files
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Drag & Drop
+- ✅ Prompt card drag handle support
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+# 🛠️ Tech Stack
+
+## Frontend
+
+- React.js
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Hook Form
+- Zod
+- Axios
+- Lucide React
+- Sonner Toast
+
+## Backend
+
+- Node.js
+- Express.js
+- TypeScript
+- MongoDB
+- Mongoose
+
+## Tools
+
+- Git & GitHub
+- Postman
+- MongoDB Atlas
+
+---
+
+# 📂 Project Structure
+
+```
+AI-Prompt-Library
+│
+├── frontend
+│   ├── src
+│   │   ├── components
+│   │   │   ├── common
+│   │   │   ├── dashboard
+│   │   │   ├── layout
+│   │   │   ├── prompt
+│   │   │   └── ui
+│   │   │
+│   │   ├── context
+│   │   ├── hooks
+│   │   ├── pages
+│   │   ├── services
+│   │   ├── types
+│   │   └── utils
+│
+└── backend
+    ├── src
+    │   ├── controllers
+    │   ├── models
+    │   ├── routes
+    │   └── server.ts
+```
+
+---
+
+# ⚙️ Installation & Setup
+
+## Clone Repository
+
+```bash
+git clone https://github.com/yashsahane-eng/AI-Prompt-Library.git
+```
+
+---
+
+# Frontend Setup
+
+Navigate to frontend:
+
+```bash
+cd frontend
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create `.env` file:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+Run frontend:
+
+```bash
+npm run dev
+```
+
+Frontend runs on:
+
+```
+http://localhost:5173
+```
+
+---
+
+# Backend Setup
+
+Navigate to backend:
+
+```bash
+cd backend
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create `.env` file:
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+```
+
+Run backend:
+
+```bash
+npm run dev
+```
+
+Backend runs on:
+
+```
+http://localhost:5000
+```
+
+---
+
+# 🔌 API Endpoints
+
+## Get All Prompts
+
+```
+GET /api/prompts
+```
+
+## Get Prompt By ID
+
+```
+GET /api/prompts/:id
+```
+
+## Create Prompt
+
+```
+POST /api/prompts
+```
+
+## Update Prompt
+
+```
+PUT /api/prompts/:id
+```
+
+## Delete Prompt
+
+```
+DELETE /api/prompts/:id
+```
+
+---
+
+# 🧩 Application Flow
+
+```
+React Frontend
+
+      |
+      | Axios API Requests
+
+      ↓
+
+Express Backend
+
+      |
+      | Mongoose
+
+      ↓
+
+MongoDB Atlas Database
+```
+
+---
+
+# 📸 Screenshots
+
+Add application screenshots here:
 
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 
 ```
+
+<img width="1341" height="683" alt="image" src="https://github.com/user-attachments/assets/f31ca6fb-0604-4d75-b34e-96d01e760c05" />
+
+
+---
+
+# 🎯 Future Improvements
+
+- User authentication with JWT
+- User-specific prompt collections
+- AI prompt improvement suggestions
+- Prompt sharing
+- Cloud deployment
+- Dark/Light mode
+
+---
+
+# 👨‍💻 Author
+
+**Yash Sahane**
+
+Built with React, TypeScript, Node.js and MongoDB.

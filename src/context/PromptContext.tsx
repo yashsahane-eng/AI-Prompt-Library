@@ -8,7 +8,7 @@ import {
 } from "react";
 
 import type { Prompt } from "../types/Prompt";
-import { samplePrompts } from "../utils/samplePrompts";
+import { promptService } from "../services/promptService";
 import {
   sortPrompts,
   searchPrompts,
@@ -20,6 +20,8 @@ import {
 interface PromptContextType {
   prompts: Prompt[];
   filteredPrompts: Prompt[];
+
+  loading: boolean;
 
   searchTerm: string;
   setSearchTerm: (value: string) => void;
@@ -35,84 +37,113 @@ interface PromptContextType {
 
   editingPrompt: Prompt | null;
 
-  addPrompt: (prompt: Omit<Prompt, "id">) => void;
+  addPrompt: (
+    prompt: Omit<Prompt, "id">
+  ) => Promise<void>;
 
   updatePrompt: (
     id: string,
-    prompt: Omit<Prompt, "id" | "createdAt" | "updatedAt">
+    prompt: Omit<
+      Prompt,
+      "id" | "createdAt" | "updatedAt"
+    >
+  ) => Promise<void>;
+
+  deletePrompt: (id: string) => Promise<void>;
+
+  toggleFavorite: (id: string) => Promise<void>;
+
+  togglePinned: (id: string) => Promise<void>;
+
+  duplicatePrompt: (id: string) => Promise<void>;
+
+  setEditingPrompt: (
+    prompt: Prompt | null
   ) => void;
 
-  deletePrompt: (id: string) => void;
-
-  toggleFavorite: (id: string) => void;
-
-  togglePinned: (id: string) => void;
-
-  duplicatePrompt: (id: string) => void;
-
-  setEditingPrompt: (prompt: Prompt | null) => void;
-
-  setPrompts: React.Dispatch<React.SetStateAction<Prompt[]>>;
+  setPrompts: React.Dispatch<
+    React.SetStateAction<Prompt[]>
+  >;
 }
 
-const PromptContext = createContext<PromptContextType | undefined>(
-  undefined
-);
-
-const STORAGE_KEY = "ai-prompt-library";
+const PromptContext = createContext<
+  PromptContextType | undefined
+>(undefined);
 
 export function PromptProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  const [prompts, setPrompts] = useState<Prompt[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+  const [prompts, setPrompts] = useState<
+    Prompt[]
+  >([]);
 
-    if (saved) {
-      try {
-        return sortPrompts(JSON.parse(saved));
-      } catch {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    }
-
-    return sortPrompts(samplePrompts);
-  });
+  const [loading, setLoading] =
+    useState(true);
 
   const [editingPrompt, setEditingPrompt] =
     useState<Prompt | null>(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] =
+    useState("");
 
-  const [selectedCategory, setSelectedCategory] =
-    useState("All");
+  const [
+    selectedCategory,
+    setSelectedCategory,
+  ] = useState("All");
 
-  const [showFavoritesOnly, setShowFavoritesOnly] =
-    useState(false);
+  const [
+    showFavoritesOnly,
+    setShowFavoritesOnly,
+  ] = useState(false);
 
   const [sortBy, setSortBy] =
     useState<SortOption>("Newest");
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(prompts)
-    );
-  }, [prompts]);
+    const loadPrompts = async () => {
+      try {
+        setLoading(true);
+
+        const data =
+          await promptService.getAll();
+
+        setPrompts(sortPrompts(data));
+      } catch (error) {
+        console.error(
+          "Failed to load prompts",
+          error
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPrompts();
+  }, []);
 
   const filteredPrompts = useMemo(() => {
-    let result = searchPrompts(prompts, searchTerm);
+    let result = searchPrompts(
+      prompts,
+      searchTerm
+    );
 
-    result = filterPrompts(result, selectedCategory);
+    result = filterPrompts(
+      result,
+      selectedCategory
+    );
 
     if (showFavoritesOnly) {
-      result = result.filter((prompt) => prompt.favorite);
+      result = result.filter(
+        (prompt) => prompt.favorite
+      );
     }
 
-    result = sortFilteredPrompts(result, sortBy);
-
-    return result;
+    return sortFilteredPrompts(
+      result,
+      sortBy
+    );
   }, [
     prompts,
     searchTerm,
@@ -121,99 +152,147 @@ export function PromptProvider({
     sortBy,
   ]);
 
-  const addPrompt = (prompt: Omit<Prompt, "id">) => {
-    const newPrompt: Prompt = {
-      id: crypto.randomUUID(),
-      ...prompt,
-    };
+  const addPrompt = async (
+    prompt: Omit<Prompt, "id">
+  ) => {
+    try {
+      const created =
+        await promptService.create(prompt);
 
-    setPrompts((prev) => sortPrompts([newPrompt, ...prev]));
+      setPrompts((prev) =>
+        sortPrompts([created, ...prev])
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   };
 
-  const updatePrompt = (
+  const updatePrompt = async (
     id: string,
     updatedPrompt: Omit<
       Prompt,
       "id" | "createdAt" | "updatedAt"
     >
   ) => {
-    setPrompts((prev) =>
-      sortPrompts(
-        prev.map((prompt) =>
-          prompt.id === id
-            ? {
-                ...prompt,
-                ...updatedPrompt,
-                updatedAt: new Date().toISOString(),
-              }
-            : prompt
+    try {
+      const updated =
+        await promptService.update(
+          id,
+          updatedPrompt
+        );
+
+      setPrompts((prev) =>
+        sortPrompts(
+          prev.map((prompt) =>
+            prompt.id === id
+              ? updated
+              : prompt
+          )
         )
-      )
-    );
-
-    setEditingPrompt(null);
-  };
-
-  const deletePrompt = (id: string) => {
-    setPrompts((prev) =>
-      sortPrompts(
-        prev.filter((prompt) => prompt.id !== id)
-      )
-    );
-  };
-
-  const toggleFavorite = (id: string) => {
-    setPrompts((prev) =>
-      sortPrompts(
-        prev.map((prompt) =>
-          prompt.id === id
-            ? {
-                ...prompt,
-                favorite: !prompt.favorite,
-                updatedAt: new Date().toISOString(),
-              }
-            : prompt
-        )
-      )
-    );
-  };
-
-  const togglePinned = (id: string) => {
-    setPrompts((prev) =>
-      sortPrompts(
-        prev.map((prompt) =>
-          prompt.id === id
-            ? {
-                ...prompt,
-                pinned: !prompt.pinned,
-                updatedAt: new Date().toISOString(),
-              }
-            : prompt
-        )
-      )
-    );
-  };
-
-  const duplicatePrompt = (id: string) => {
-    setPrompts((prev) => {
-      const prompt = prev.find(
-        (prompt) => prompt.id === id
       );
 
-      if (!prompt) return prev;
+      setEditingPrompt(null);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
 
-      const duplicated: Prompt = {
-        ...prompt,
-        id: crypto.randomUUID(),
+  const deletePrompt = async (id: string) => {
+    try {
+      await promptService.delete(id);
+
+      setPrompts((prev) =>
+        sortPrompts(
+          prev.filter(
+            (prompt) => prompt.id !== id
+          )
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const toggleFavorite = async (id: string) => {
+    const prompt = prompts.find(
+      (prompt) => prompt.id === id
+    );
+
+    if (!prompt) return;
+
+    const updated =
+      await promptService.update(id, {
+        title: prompt.title,
+        description: prompt.description,
+        content: prompt.content,
+        category: prompt.category,
+        tags: prompt.tags,
+        favorite: !prompt.favorite,
+        pinned: prompt.pinned,
+      });
+
+    setPrompts((prev) =>
+      sortPrompts(
+        prev.map((item) =>
+          item.id === id ? updated : item
+        )
+      )
+    );
+  };
+
+  const togglePinned = async (id: string) => {
+    const prompt = prompts.find(
+      (prompt) => prompt.id === id
+    );
+
+    if (!prompt) return;
+
+    const updated =
+      await promptService.update(id, {
+        title: prompt.title,
+        description: prompt.description,
+        content: prompt.content,
+        category: prompt.category,
+        tags: prompt.tags,
+        favorite: prompt.favorite,
+        pinned: !prompt.pinned,
+      });
+
+    setPrompts((prev) =>
+      sortPrompts(
+        prev.map((item) =>
+          item.id === id ? updated : item
+        )
+      )
+    );
+  };
+
+  const duplicatePrompt = async (id: string) => {
+    const prompt = prompts.find(
+      (prompt) => prompt.id === id
+    );
+
+    if (!prompt) return;
+
+    const duplicated =
+      await promptService.create({
         title: `${prompt.title} (Copy)`,
+        description: prompt.description,
+        content: prompt.content,
+        category: prompt.category,
+        tags: [...prompt.tags],
         favorite: false,
         pinned: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      };
+      });
 
-      return sortPrompts([duplicated, ...prev]);
-    });
+    setPrompts((prev) =>
+      sortPrompts([duplicated, ...prev])
+    );
   };
 
   return (
@@ -221,6 +300,8 @@ export function PromptProvider({
       value={{
         prompts,
         filteredPrompts,
+
+        loading,
 
         searchTerm,
         setSearchTerm,

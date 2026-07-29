@@ -77,7 +77,9 @@ function AddPromptModal({
     }
   }, [editingPrompt, reset]);
 
-  const onSubmit = (data: PromptFormData) => {
+  const onSubmit = async (
+    data: PromptFormData
+  ) => {
     const formattedPrompt = {
       title: data.title,
       description: data.description,
@@ -91,20 +93,34 @@ function AddPromptModal({
       pinned: editingPrompt?.pinned ?? false,
     };
 
-    if (editingPrompt) {
-      updatePrompt(editingPrompt.id, formattedPrompt);
-      toast.success("Prompt updated successfully!");
-    } else {
-      addPrompt({
-        ...formattedPrompt,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+    try {
+      if (editingPrompt) {
+        await updatePrompt(
+          editingPrompt.id,
+          formattedPrompt
+        );
 
-      toast.success("Prompt added successfully!");
+        toast.success(
+          "Prompt updated successfully!"
+        );
+      } else {
+        await addPrompt({
+          ...formattedPrompt,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+        toast.success(
+          "Prompt added successfully!"
+        );
+      }
+
+      handleClose();
+    } catch {
+      toast.error(
+        "Something went wrong. Please try again."
+      );
     }
-
-    handleClose();
   };
 
   const handleClose = () => {
@@ -139,8 +155,6 @@ function AddPromptModal({
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-5"
         >
-          {/* Title */}
-
           <div>
             <label className="block mb-2 font-medium">
               Title
@@ -156,8 +170,6 @@ function AddPromptModal({
               {errors.title?.message}
             </p>
           </div>
-
-          {/* Description */}
 
           <div>
             <label className="block mb-2 font-medium">
@@ -175,8 +187,6 @@ function AddPromptModal({
               {errors.description?.message}
             </p>
           </div>
-
-          {/* Category */}
 
           <div>
             <label className="block mb-2 font-medium">
@@ -206,8 +216,6 @@ function AddPromptModal({
             </select>
           </div>
 
-          {/* Tags */}
-
           <div>
             <label className="block mb-2 font-medium">
               Tags
@@ -223,8 +231,6 @@ function AddPromptModal({
               {errors.tags?.message}
             </p>
           </div>
-
-          {/* Buttons */}
 
           <div className="flex justify-end gap-3 pt-3">
             <button

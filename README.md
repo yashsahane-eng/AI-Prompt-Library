@@ -6,6 +6,14 @@ AI Prompt Library allows users to create, manage, organize, and reuse AI prompts
 
 ---
 
+## Live Demo
+
+Frontend:
+[https://your-vercel-url.vercel.app](https://ai-prompt-library-gold.vercel.app/)
+
+Backend API:
+[https://your-render-url.onrender.com](https://ai-prompt-library-backend-vdt1.onrender.com)
+
 ## 🚀 Features
 
 ### Prompt Management
@@ -250,6 +258,8 @@ Add application screenshots here:
 ```
 
 <img width="1341" height="683" alt="image" src="https://github.com/user-attachments/assets/f31ca6fb-0604-4d75-b34e-96d01e760c05" />
+<img width="1077" height="452" alt="image" src="https://github.com/user-attachments/assets/87c156bc-c733-4454-b445-2b311976e60b" />
+
 
 
 ---
